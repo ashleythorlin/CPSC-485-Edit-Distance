@@ -52,3 +52,20 @@ input {
   margin: 5px 0px;
   width: 150px;
 }
+
+table, th, td {
+  border: 2px solid;
+  border-color: #61dafb;
+  border-collapse: collapse;
+}
+
+th, td {
+  width: 30px;
+  height: 30px;
+  text-align: center;
+}
+
+tr:nth-child(1), td:nth-child(1) {
+  font-weight: bold;
+}
+

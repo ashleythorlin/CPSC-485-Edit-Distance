@@ -2,12 +2,8 @@ import '../App.css';
 import React from 'react';
 import Divider from './Divider';
 
-// TODO:
-// determine/display alignment and alignment score
-
-
 // returns matrix of calculation for edit distance
-function calcEditDistance(word1, word2){
+async function calcEditDistance(word1, word2){
   const len_1 = word1.length
   const len_2 = word2.length
 
@@ -36,7 +32,7 @@ function calcEditDistance(word1, word2){
     for (let j = 2; j < (len_2 + 2); j++){
       let vals = [matrix[i-1][j], matrix[i][j-1], matrix[i-1][j-1]]
       let min_val = Math.min(...vals)
-      if (matrix[i][0] == matrix[0][j]){
+      if (matrix[i][0] === matrix[0][j]){
         matrix[i][j] = matrix[i-1][j-1]
       }
       else {
@@ -44,8 +40,49 @@ function calcEditDistance(word1, word2){
       }
     }
   }
-  console.log(matrix)
   return matrix
+}
+
+// generates alignment based on matrix
+async function calcAlignment(matrix){
+  let x = matrix.length - 1
+  let y = matrix[0].length - 1
+  let alignment = ['', '']
+  alignment[0] += matrix[0][y]
+  alignment[1] += matrix[x][0]
+  x -= 1
+  y -= 1
+  while (x > 0 || y > 0) {
+    if (matrix[x][0] === matrix[0][y]){
+      alignment[0] = matrix[0][y] + alignment[0]
+      alignment[1] = matrix[x][0] + alignment[1]
+      x -= 1
+      y -= 1
+      continue
+    }
+    let vals = [matrix[x-1][y], matrix[x][y-1], matrix[x-1][y-1]]
+    let min_val = Math.min(...vals)
+    if(vals[1] === min_val){
+      alignment[0] = matrix[0][y] + alignment[0]
+      alignment[1] = "_" + alignment[1]
+      y -= 1
+      continue
+    }
+    if (vals[0] === min_val){
+      alignment[0] = "_" + alignment[0]
+      alignment[1] = matrix[x][0] + alignment[1]
+      x -= 1
+      continue
+    }
+    if (vals[2] === min_val){
+      alignment[0] = matrix[0][y] + alignment[0]
+      alignment[1] = matrix[x][0] + alignment[1]
+      x -= 1
+      y -= 1
+      continue
+    }
+  }
+  return alignment
 }
 
 class EditDistance extends React.Component {
@@ -54,7 +91,8 @@ class EditDistance extends React.Component {
     this.state = {
       firstWord: '',
       secondWord: '',
-      matrix: [[]]
+      matrix: [[]],
+      alignment: []
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -71,15 +109,18 @@ class EditDistance extends React.Component {
     });
   }
 
-  handleSubmit(event) {
-    console.log('Words were submitted: ' + this.state.firstWord + ', ' + this.state.secondWord);
+  async handleSubmit(event) {
     event.preventDefault();
+    let new_matrix = await calcEditDistance(this.state.firstWord, this.state.secondWord)
+    let new_alignment = await calcAlignment(new_matrix)
     this.setState({
-      matrix: calcEditDistance(this.state.firstWord, this.state.secondWord)
+      matrix: new_matrix,
+      alignment: new_alignment
     })
   }
 
   render() {
+
     return (
       <div className="WordInput">
         <div>
@@ -123,6 +164,10 @@ class EditDistance extends React.Component {
               ))}
             </tbody>
           </table>
+          <p>The edit distance is: {this.state.matrix[this.state.matrix.length-1][this.state.matrix[0].length-1]}</p>
+          <p>Alignment is:</p>
+          <p>{this.state.alignment[0]}</p>
+          <p>{this.state.alignment[1]}</p>
         </div>
       </div>
     )
