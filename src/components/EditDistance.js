@@ -89,8 +89,8 @@ class EditDistance extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstWord: '',
-      secondWord: '',
+      firstWord: 'null',
+      secondWord: 'null',
       matrix: [[]],
       alignment: []
     };
@@ -113,6 +113,7 @@ class EditDistance extends React.Component {
     event.preventDefault();
     let new_matrix = await calcEditDistance(this.state.firstWord, this.state.secondWord)
     let new_alignment = await calcAlignment(new_matrix)
+    console.log("way")
     this.setState({
       matrix: new_matrix,
       alignment: new_alignment
